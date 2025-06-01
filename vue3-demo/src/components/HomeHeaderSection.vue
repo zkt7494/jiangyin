@@ -1,3 +1,4 @@
+<!-- HomeHeaderSection.vue -->
 <template>
     <div class="head">
       <div class="head-top-left">
@@ -18,7 +19,7 @@
           <router-link to="/accounting" class="nav-item">价值自动核算</router-link>
           <router-link to="/voucher" class="nav-item">生态券核算</router-link>
         </ul>
-        <button id="login-button">登录</button>
+        <!-- <button id="login-button">登录</button> -->
       </div>
     </div>
   </template>

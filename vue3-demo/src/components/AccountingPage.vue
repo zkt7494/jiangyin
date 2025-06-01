@@ -1,305 +1,515 @@
+<!-- AccountingPage.vue -->
 <template>
-    <div class="layout-container">
-        <div class="center">
-            <div class="material-content">
-                <div class="top-title">水产品状况简介</div>
-                <div class="top-intro"> 江阴市地处太湖水网平原北侧，境内河流密布水网密集，素有“鱼米之乡”之美誉。江阴全市水产养殖面积53700亩，常规鱼类养殖面积占62.63%，特种水产养殖面积占37.37%。 </div>
-                <div class="chart-header">
-                    <div class="swiper swiper-left"> &lt; </div>
-                    <div class="chart-title">2021全市水产品产量分布</div>
-                    <div class="swiper swiper-right"> &gt; </div>
-                </div>
-                <div class="map-tool">
-                    <div role="radiogroup" class="el-radio-group">
-                        <label role="radio" aria-checked="true" tabindex="0" class="el-radio-button el-radio-button--small is-active">
-                            <input type="radio" tabindex="-1" autocomplete="off" class="el-radio-button__orig-radio" value="Product">
-                            <span class="el-radio-button__inner" style="background-color: rgb(102, 177, 255); border-color: rgb(102, 177, 255); box-shadow: rgb(102, 177, 255) -1px 0px 0px 0px;">产量<!----></span>
-                        </label>
-                        <label role="radio" tabindex="-1" class="el-radio-button el-radio-button--small">
-                            <input type="radio" tabindex="-1" autocomplete="off" class="el-radio-button__orig-radio" value="Area">
-                            <span class="el-radio-button__inner">面积<!----></span>
-                        </label>
-                    </div>
-                </div>
-                <div class="map-content">
-                    <div id="chart" _echarts_instance_="ec_1743572962639" style="user-select: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0); position: relative;">
-                        <div style="position: relative; width: 1237px; height: 645px; padding: 0px; margin: 0px; border-width: 0px; cursor: default;">
-                            <canvas data-zr-dom-id="zr_0" width="1237" height="645" style="position: absolute; left: 0px; top: 0px; width: 1237px; height: 645px; user-select: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0); padding: 0px; margin: 0px; border-width: 0px;"></canvas>
-                        </div>        
-                        
-                    </div>
-                </div>
-            </div>
-        
+  <div id="container" class="router-view main">
+    <div class="left-map">
+      <div class="map-container jy-theme">
+        <div id="map" style="width: 100%; height: 100vh;">
+          <div class="map-layer-menu">
+            <el-menu
+              class="el-menu-vertical-demo"
+              background-color="transparent"
+              text-color="#fff"
+              active-text-color="#409eff"
+            >
+              <el-sub-menu index="0" >
+                <template #title>
+                  <div class="title">
+                    <img src="/icons/layers.svg" alt="图层" class="menu-icon" />
+                    <span class="menu-title-text">选择图层</span>
+                  </div>
+                </template>
+                <el-menu-item >
+                  <el-checkbox  v-model="checkboxValues['标注']" >标注</el-checkbox>
+                </el-menu-item>
+                <el-menu-item>
+                  <el-checkbox v-model="checkboxValues['三区三线']">三区三线</el-checkbox>
+                </el-menu-item>
+                <el-menu-item>
+                  <el-checkbox v-model="checkboxValues['遥感影像']">遥感影像</el-checkbox>
+                </el-menu-item>
+                <el-menu-item>
+                  <el-checkbox v-model="checkboxValues['地类分布']">地类分布</el-checkbox>
+                </el-menu-item>
+              </el-sub-menu>
+            </el-menu>
+          </div>
+          <div id="legend" class="map-legend"></div> 
         </div>
-        <div class="left">
-            <ul  role="menubar" class="el-menu-vertical-demo el-menu" style="background-color: transparent;">
-                <div>
-                    <li  role="menuitem" aria-haspopup="true" aria-expanded="true" class="el-submenu is-active is-opened">
-                        <div class="el-submenu__title" style="padding-left: 20px; color: rgb(255, 255, 255); background-color: transparent;">
-                            <div  class="title">
-                                <svg aria-hidden="true" class="svg-icon" class-name="menu-icon mr10">
-                                    <use xlink:href="#icon-material"></use>
-                                </svg>
-                                <span >物质供给类</span>
-                            </div>
-                            <i class="el-submenu__icon-arrow el-icon-arrow-down"></i>
-                            <i class="el-submenu__icon-arrow el-icon-arrow-down"></i>
-                        </div>
-                        <ul role="menu" class="el-menu el-menu--inline" style="background-color: transparent;" data-old-padding-top data-old-padding-bottom data-old-overflow>
-                            <li class="el-menu-item-group">
-                                <div class="el-menu-item-group__title" style="padding-left: 40px;"></div>
-                                <ul>
-                                    <li  role="menuitem" tabindex="-1" class="el-menu-item" style="padding-left: 40px; color: rgb(255, 255, 255); background-color: transparent;"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                                        <span >水产品</span>
-                                    </li>
-                                </ul>
-
-                            </li>
-                        </ul>
-                    </li>
-                </div>
-                <div></div>
-                <div></div>
-            </ul>
-        </div>
-        <div class="right"></div>
+      </div>
     </div>
+    <div class="right-option">
+      <div class="option-content">
+        <div class="option-container">
+          <div class="option-head">
+            <div class="option-title">产品类型选择</div>
+            <el-checkbox
+              :indeterminate="isIndeterminate"
+              v-model="checkAll"
+              @change="handleCheckAllChange">全选</el-checkbox>
+          </div>
+          <div class="checkbox-container">
+            <el-checkbox-group v-model="checkedProducts" >
+            <el-row>
+              <el-col :span="8" v-for="item in productList" :key="item">
+                <el-checkbox :label="item">{{ item }}</el-checkbox>
+              </el-col>
+            </el-row>
+          </el-checkbox-group>
+        </div>
+          
+        </div>
+
+        <div class="option-container">
+          <div class="option-head">
+            <div class="option-title">核算类型选择</div>
+            <el-checkbox
+              :indeterminate="isIndeterminateType"
+              v-model="checkAllType"
+              @change="handleCheckAllTypeChange">全选</el-checkbox>
+          </div>
+          <div class="checkbox-container">
+            <el-checkbox-group v-model="checkedTypes">
+            <el-row>
+              <el-col :span="8" v-for="item in typeList" :key="item" >
+                <el-checkbox :label="item">{{ item }}</el-checkbox>
+              </el-col>
+            </el-row>
+          </el-checkbox-group>
+          </div>
+        </div>
+
+        <div style="margin:1em; display:flex; flex-direction:row-reverse;">
+          <el-button size="small" type="primary" @click="fetchData">价值核算</el-button>
+        </div>
+
+        <el-table v-if="tableData.length" :data="tableData" stripe>
+          <el-table-column prop="productType" label="产品类型" />
+          <el-table-column
+            v-if="checkedTypes.includes('价值量')"
+            prop="valueValue"
+            label="价值量 (万元)"
+          />
+          <el-table-column
+            v-if="checkedTypes.includes('功能量')"
+            prop="functionValue"
+            label="功能量"
+          />
+        </el-table>
+        <div v-else style="text-align:center; margin-top:2em;">选择行政区、产品类型、核算类型后，点击“价值核算”。</div>
+      </div>
+    </div>
+  </div>
 </template>
 <script setup>
+import { ref, reactive, onMounted, watch } from 'vue'
+import 'ol/ol.css'
+import Map from 'ol/Map'
+import View from 'ol/View'
+import VectorLayer from 'ol/layer/Vector'
+import VectorSource from 'ol/source/Vector'
+import GeoJSON from 'ol/format/GeoJSON'
+import { Style, Fill, Stroke } from 'ol/style'
+import ImageLayer from 'ol/layer/Image'
+import ImageArcGISRest from 'ol/source/ImageArcGISRest'
+import proj4 from 'proj4'
+import { register } from 'ol/proj/proj4'
+import { get as getProjection } from 'ol/proj'
+
+const checkAll = ref(false)
+const checkAllType = ref(false)
+const isIndeterminate = ref(false)
+const isIndeterminateType = ref(false)
+const checkedProducts = ref([])
+const checkedTypes = ref([])
+function handleCheckAllChange(val) {
+  checkedProducts.value = val ? [...productList] : []
+  isIndeterminate.value = false
+}
+
+function handleCheckAllTypeChange(val) {
+  checkedTypes.value = val ? [...typeList] : []
+  isIndeterminateType.value = false
+}
+
+const tableData = ref([])
+// 注册 EPSG:4547 和 EPSG:4528 坐标系
+proj4.defs('EPSG:4547', '+proj=tmerc +lat_0=0 +lon_0=120 +k=1 +x_0=500000 +y_0=0 +datum=WGS84 +units=m +no_defs')
+proj4.defs('EPSG:4528', '+proj=tmerc +lat_0=0 +lon_0=120 +k=1 +x_0=40500000 +y_0=0 +datum=CGCS2000 +units=m +no_defs')
+register(proj4)
+getProjection('EPSG:4547').setExtent([40498532, 3507263, 40556464, 3541460])
+getProjection('EPSG:4528').setExtent([40500000, 3500000, 40600000, 3600000])
+
+// 2. 产品类型选择、核算类型选择的数据
+const productList = [
+  '水源涵养', '土壤保持', '防风固沙', '洪水调蓄',
+  '空气净化', '水质净化', '碳固定', '氧气提供', '气候调节', '噪声消减'
+]
+const typeList = ['功能量', '价值量']
+const map = ref(null)
+const checkboxValues = ref({
+  '标注': false,
+  '三区三线': false,
+  '遥感影像': false,
+  '地类分布': false
+})
+
+const baseLayerUrls = {
+  '标注': 'http://gohhu.com:6080/arcgis/rest/services/注记/MapServer',
+  '三区三线': 'http://gohhu.com:6080/arcgis/rest/services/三区三线/MapServer',
+  '遥感影像': 'http://gohhu.com:6080/arcgis/rest/services/遥感影像/MapServer',
+  '地类分布': 'http://gohhu.com:6080/arcgis/rest/services/地类分布/MapServer'
+}
+const baseLayers = reactive({}) 
+// 清除图例
+const clearLegend = () => {
+  const legendDiv = document.getElementById('legend')
+  if (legendDiv) legendDiv.innerHTML = ''
+}
+
+// 加载ArcGIS REST图例
+const loadLegend = async (serviceUrl) => {
+  const legendDiv = document.getElementById('legend')
+  if (!legendDiv || !serviceUrl) return
+  try {
+    const res = await fetch(`${serviceUrl}/legend?f=json`)
+    const json = await res.json()
+    json.layers.forEach(layer => {
+      const title = document.createElement('div')
+      title.style.fontWeight = 'bold'
+      title.style.margin = '6px 0'
+      title.textContent = layer.layerName
+      legendDiv.appendChild(title)
+
+      layer.legend.forEach(item => {
+        const row = document.createElement('div')
+        row.style.display = 'flex'
+        row.style.alignItems = 'center'
+        row.style.marginBottom = '4px'
+
+        const img = document.createElement('img')
+        img.src = `data:${item.contentType};base64,${item.imageData}`
+        img.style.width = '20px'
+        img.style.height = '20px'
+        img.style.marginRight = '6px'
+
+        const label = document.createElement('span')
+        label.textContent = item.label || ''
+
+        row.appendChild(img)
+        row.appendChild(label)
+        legendDiv.appendChild(row)
+      })
+    })
+  } catch (err) {
+    console.error('加载图例失败:', err)
+  }
+}
+  // 多选高亮
+const selectedFeatures = new Set()
+onMounted(() => {
+
+  // 加载GeoServer的WFS图层
+  const vectorSource = new VectorSource({
+    format: new GeoJSON(),
+    url: 'http://localhost:8080/geoserver/jiangyin/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=jiangyin:%E8%A1%8C%E6%94%BF%E5%8C%BA&outputFormat=application/json'
+  })
+
+  const vectorLayer = new VectorLayer({
+    source: vectorSource,
+    style: new Style({
+      fill: new Fill({ color: 'rgba(0, 0, 0, 0)' }), // 透明填充
+      stroke: new Stroke({ color: '#000', width: 1 }) // 黑色边界
+    })
+  })
+  vectorLayer.setZIndex(10)
+
+  // ArcGIS行政边界底图
+  const arcgisBoundaryLayer = new ImageLayer({
+    source: new ImageArcGISRest({
+      url: 'http://gohhu.com:6080/arcgis/rest/services/行政边界/MapServer'
+    })
+  })
+  arcgisBoundaryLayer.setZIndex(-1)
+
+  map.value = new Map({
+    target: 'map',
+    layers: [arcgisBoundaryLayer, vectorLayer],
+    view: new View({
+      projection: 'EPSG:4528',
+      center: [40527350, 3522218],
+      zoom: 2.8
+    })
+  })
+
+map.value.on('click', (evt) => {
+  map.value.forEachFeatureAtPixel(evt.pixel, (feature, layer) => {
+    if (selectedFeatures.has(feature)) {
+      // 取消高亮
+      feature.setStyle(new Style({
+        fill: new Fill({ color: 'rgba(0, 0, 0, 0)' }),
+        stroke: new Stroke({ color: '#000', width: 1 })
+      }))
+      selectedFeatures.delete(feature)
+    } else {
+      // 添加高亮
+      feature.setStyle(new Style({
+        fill: new Fill({ color: 'rgba(128, 128, 128, 0.5)' }),
+        stroke: new Stroke({ color: '#666', width: 2 })
+      }))
+      selectedFeatures.add(feature)
+      console.log('点击元素属性：', feature.getProperties())
+    }
+  })
+})
+
+  // 勾选底图动态切换
+  watch(
+  checkboxValues,
+  async (newVals) => {
+    clearLegend() // 每次变更前清空图例
+    for (const [key, isChecked] of Object.entries(newVals)) {
+      const url = baseLayerUrls[key]
+
+      if (isChecked) {
+        if (!baseLayers[key]) {
+          const layer = new ImageLayer({
+            source: new ImageArcGISRest({ url })
+          })
+          layer.setZIndex(0)
+          baseLayers[key] = layer
+          map.value.addLayer(layer)
+        }
+
+        // ✅ 加载图例
+        await loadLegend(url)
+
+      } else {
+        const layer = baseLayers[key]
+        if (layer) {
+          map.value.removeLayer(layer)
+          delete baseLayers[key]
+        }
+      }
+    }
+  },
+  { deep: true, immediate: true }
+)
+})
+
+async function fetchData() {
+  if (selectedFeatures.size === 0) {
+    alert('请在地图中选择区域')
+    return
+  }
+
+  const districts = Array.from(selectedFeatures)
+    .map(f => f.get('xzqmc'))
+    .filter(Boolean)
+
+  if (districts.length === 0) {
+    alert('选中的区域中没有找到 xzqmc 属性')
+    return
+  }
+
+  const queryString = districts.join(',')
+  const url = `/api/StatisticByDistrict?districts=${encodeURIComponent(queryString)}`
+
+  try {
+    const response = await fetch(url)
+    const raw = await response.json()
+
+    const fieldMap = {
+      '水源涵养': ['waterFun', 'waterValue'],
+      '土壤保持': ['soilFun', 'soilValue'],
+      '防风固沙': ['windSandFun', 'windSandValue'],
+      '洪水调蓄': ['floodFun', 'floodValue'],
+      '空气净化': ['airFun', 'airValue'],
+      '水质净化': ['waterQualityFun', 'waterQualityValue'],
+      '碳固定': ['co2Fun', 'co2Value'],
+      '氧气提供': ['o2Fun', 'o2Value'],
+      '气候调节': ['climateFun', 'climateValue'],
+      '噪声消减': [null, 'noiseValue']
+    }
+
+    const result = []
+
+    for (const product of checkedProducts.value) {
+      const [funKey, valueKey] = fieldMap[product] || []
+
+      const row = { productType: product }
+
+      if (checkedTypes.value.includes('功能量')) {
+        row.functionValue = funKey ? raw[funKey] ?? 0 : 0
+      }
+
+      if (checkedTypes.value.includes('价值量')) {
+        row.valueValue = valueKey ? raw[valueKey] ?? 0 : 0
+      }
+
+      result.push(row)
+    }
+
+    tableData.value = result
+  } catch (e) {
+    console.error('重新核算请求失败:', e)
+  }
+}
+// 监听产品类型是否全选
+watch(checkedProducts, (newVal) => {
+  checkAll.value = newVal.length === productList.length
+  isIndeterminate.value = newVal.length > 0 && newVal.length < productList.length
+})
+
+// 监听核算类型是否全选
+watch(checkedTypes, (newVal) => {
+  checkAllType.value = newVal.length === typeList.length
+  isIndeterminateType.value = newVal.length > 0 && newVal.length < typeList.length
+})
 
 </script>
-  
-<style scoped>
-.center {
-    order: 2;
-    flex: 1;
-}
-.material-content {
-    display: flex;
-    flex-direction: column;
-    height: 100vh;
-}
-.top-title  {
-    order: 1;
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    gap: 16px;
-    margin: 20px 5px 5px 5px;
-    padding-left: 15px;
-    height: 40px;
-    font-size: 20px;
-    background: hsla(0, 0%, 100%, .1);
-    color: #fff;
-    text-shadow: 0 2px 4px #4dd4ff;
-}
-.top-intro  {
-    order: 2;
-    color: hsla(0, 0%, 100%, .8);
-    height: 8%;
-    overflow: auto;
-    overflow-x: hidden;
-    font-size: 18px;
-}
-.chart-header  {
-    margin-left: auto;
-    margin-right: auto;
-    order: 3;
-    margin-top: 0;
-    color: hsla(0, 0%, 100%, .8);
-    font-size: 18px;
-    font-size: 20px;
-    display: flex;
-    flex-direction: row;
-    z-index: 1000;
-}
-.swiper-left  {
-    order: 0;
-    margin-right: 10px;
-    margin-top: -4px;
-}
-.chart-title  {
-    order: 1;
-    height: 20px;
-}
-.swiper-right  {
-    order: 2;
-    margin-left: 10px;
-    margin-top: -4px;
-}
-.swiper  {
-    cursor: pointer;
-    font-size: xx-large;
-    display: flex;
-    color: #fff;
-    justify-content: center;
-    align-items: center;
-}
-.map-tool  {
-    order: 4;
-}
-.el-radio-group {
-    font-size: 0;
-}
-.el-radio-button__inner, .el-radio-group {
-    display: inline-block;
-    line-height: 1;
-    vertical-align: middle;
-}
-.el-radio-button {
-    position: relative;
-    display: inline-block;
-    outline: 0;
-}
-.el-radio-button__orig-radio {
-    opacity: 0;
-    outline: 0;
-    position: absolute;
-    z-index: -1;
-}
-.el-radio-button:first-child .el-radio-button__inner {
-    border-left: 1px solid #dcdfe6;
-    border-radius: 4px 0 0 4px;
-    box-shadow: none !important;
-}
-.el-radio-button--small .el-radio-button__inner {
-    padding: 9px 15px;
-    font-size: 12px;
-    border-radius: 0;
-}
-.el-radio-button__inner {
-    background: #fff;
-    border: 1px solid #dcdfe6;
-    font-weight: 500;
-    border-left: 0;
-    color: #606266;
-    appearance: none;
-    -webkit-appearance: none;
-    text-align: center;
-    box-sizing: border-box;
-    outline: 0;
-    margin: 0;
-    cursor: pointer;
-    transition: all .3s cubic-bezier(.645,.045,.355,1);
-    padding: 12px 20px;
-    font-size: 14px;
-    border-radius: 0;
-}
-.map-content  {
-    order: 5;
-    flex: 1;
-}
-#chart  {
-    height: calc(100vh - 300px);
-}
 
-.layout-container {
+
+<style scoped>
+#map {
+  width: 100%;
+  height: 100%;
+  position: relative; 
+}
+#container {
   display: flex;
   flex-direction: row;
-  height: 100vh;
+  height: 100%;
 }
-.left  {
-    order: 1;
-    width: 200px;
-    height: calc(100% - 64px);
-    margin: 0 auto;
+#container .left-map {
+  order: 1;
+  flex: 1;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
 }
-.left  .el-menu {
-    border: none;
-    background: none;
+.map-container {
+  order: 1;
+  flex: 1;
+  background-color: #fff;
+  margin: 1em;
+  height: 100%;
 }
-.el-submenu {
-    list-style: none;
-    margin: 0;
-    padding-left: 0;
+#container .right-option {
+  order: 2;
+  width: 450px;
+  color: #fff;
 }
-.left  .el-submenu__title {
-    outline: 0;
-    background-color: rgba(0, 0, 0, .2) !important;
+.option-container {
+  margin: 1em;
+  font-family: PingFang SC;
 }
-.el-submenu.is-active .el-submenu__title {
-    border-bottom-color: #409eff;
+.option-container .option-head {
+  display: flex;
+  justify-content: space-between;
 }
-  .el-submenu__title {
-    outline: 0;
-    font-family: PingFang SC;
-    font-size: 16px;
-    background-color: rgba(0, 0, 0, .2) !important;
+.el-checkbox {
+  color: #fff;
 }
-.el-submenu__title {
-    font-size: 14px;
-    color: #303133;
-    padding: 0 20px;
-    cursor: pointer;
-    transition: border-color .3s, background-color .3s, color .3s;
-    box-sizing: border-box;
+.checkbox-container {
+  background-color: rgba(0, 0, 0, .2);
+  margin: 10px 0;
+  padding: .5em 1em .5em 1em;
 }
-.el-radio-button__inner, .el-submenu__title {
-    box-sizing: border-box;
-    -moz-box-sizing: border-box;
-    -webkit-box-sizing: border-box;
-    position: relative;
-    white-space: nowrap;
+.el-row {
+  box-sizing: border-box;
 }
-.el-menu-item, .el-submenu__title {
-    height: 56px;
-    line-height: 56px;
-    list-style: none;
+.map-layer-menu {
+  position: absolute;
+  top: 40px;
+  right: 40px;
+  z-index: 1000;
+  background-color: rgba(255, 255, 255, 0.93); /* 深蓝背景 */
+  border-radius: 6px;
+  width: 166px;
+  height: auto;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
 }
-.el-submenu__title * {
-    vertical-align: middle;
+.menu-icon {
+  width: 18px;
+  height: 18px;
+  margin-right: 4px;
+  vertical-align: middle;
 }
-.svg-icon {
-    width: 1.5em;
-    height: 1.5em;
+.map-legend {
+  position: absolute;
+  bottom: 100px;
+  left: 20px;
+  background: rgba(255, 255, 255, 0.95);
+  padding: 10px 12px;
+  border-radius: 6px;
+  box-shadow: 0 0 8px rgba(0, 0, 0, 0.2);
+  font-size: 13px;
+  color: #000;
+  z-index: 1000;
+  max-width: 260px;
 }
-.el-submenu.is-opened>.el-submenu__title .el-submenu__icon-arrow {
-    transform: rotate(180deg);
+.title{
+  font-size: 16px;
+    color: #2e2e2e;
 }
-.el-submenu__title i {
-    color: #909399;
+.map-layer-menu .el-checkbox {
+  color: #333 !important; /* 或其他深色系 */
 }
-.el-submenu__icon-arrow {
-    position: absolute;
-    top: 50%;
-    right: 20px;
-    margin-top: -7px;
-    transition: transform .3s;
-    font-size: 12px;
+/* 表格整体设置透明背景 + 白色文字 */
+/* 表格背景完全透明 */
+/* 强制让表头的 tr 背景透明 */
+::v-deep(.el-table__header-wrapper tr ){
+  background-color: transparent !important;
 }
-[class*=" el-icon-"], [class^=el-icon-] {
-    font-family: element-icons !important;
-    font-style: normal;
-    font-weight: 400;
-    font-variant: normal;
-    text-transform: none;
-    line-height: 1;
-    vertical-align: baseline;
-    display: inline-block;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
+::v-deep(.el-table),
+::v-deep(.el-table__header),
+::v-deep(.el-table__body),
+::v-deep(.el-table__row),
+::v-deep(.el-table__cell) {
+  background-color: transparent !important;
+  color: white;
+  font-size: 14px;
 }
-.el-menu-item-group__title {
-    padding: 7px 0 7px 20px;
-    line-height: normal;
-    font-size: 12px;
-    color: #909399;
+::v-deep(.el-table__header-wrapper thead) {
+  background-color: transparent !important;
 }
-.el-menu-item {
-    font-family: PingFang SC;
-    font-size: 16px;
+/* 表头文字样式 */
+::v-deep(.el-table__header .cell) {
+  font-size: 15px;
+  font-weight: bold;
+  text-align: center;
+  color: white;
+  padding: 6px 0;
 }
-.el-submenu .el-menu-item {
-    height: 50px;
-    line-height: 50px;
-    padding: 0 45px;
-    min-width: 200px;
+
+/* 表体单元格文字居中 + 缩小行高 */
+::v-deep(.el-table__body .cell) {
+  text-align: center;
+  padding: 4px 0;
+  line-height: 20px;
 }
-.el-menu-item {
-    color: #303133;
-    transition: border-color .3s, background-color .3s, color .3s;
-    box-sizing: border-box;
-    white-space: nowrap;
+
+/* 表格边框线条样式 */
+::v-deep(.el-table__header th),
+::v-deep(.el-table__body td ){
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+/* 斑马纹背景（淡蓝） */
+::v-deep(.el-table__row ){
+  background-color: rgba(0, 123, 255, 0.05) !important;
+}
+::v-deep(.el-table__row--striped) {
+  background-color: rgba(0, 123, 255, 0.15) !important;
+}
+
+/* 鼠标悬停行高亮（淡绿色） */
+::v-deep(.el-table__row:hover) {
+  background-color: rgba(0, 255, 153, 0.15) !important;
+}
+
+/* 表格滚动条隐藏 */
+::v-deep(.el-table__body-wrapper) {
+  overflow: hidden;
 }
 </style>
